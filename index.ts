@@ -47,13 +47,13 @@ export class UnionFind {
         }
     }
 
-    public union(p: number, q: number): void {
+    public union(p: number, q: number): number[] | undefined {
         const pParent = this.find(p);
         const qParent = this.find(q);
 
         if (pParent === qParent) {
             // числа уже в одной группе, не нужно их объединять
-            return;
+            return [p, q];
         }
 
         const pGroupLength = this.groupsLength[pParent];
