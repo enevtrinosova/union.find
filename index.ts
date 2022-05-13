@@ -1,60 +1,73 @@
-class UnionFind {
+export class UnionFind {
     list: number[]; // array of parents of each element
+    uniqueGroupsAmount: number; // amount of unique groups
+    groupsLength: number[]; // array of length of each group
 
     constructor(length: number) {
         const newList = [];
+        const newGroupsLength = [];
+
         for (let i = 0; i < length; i++) {
             newList.push(i);
+            newGroupsLength.push(1);
         }
 
         this.list = newList;
+        this.groupsLength = newGroupsLength;
+
+        this.uniqueGroupsAmount = length;
     }
 
-    public union(p: number, q: number): void {
+    public find(index: number): number {
+        let checkedIndex = index;
+
+        while (checkedIndex !== this.list[checkedIndex]) {
+            checkedIndex = this.list[checkedIndex];
+        }
+
+        const parentIndex = checkedIndex;
+        checkedIndex = index;
+
+        while (checkedIndex !== this.list[checkedIndex]) {
+            const oldCheckedIndex = checkedIndex;
+            this.list[oldCheckedIndex] = parentIndex;
+            checkedIndex = this.list[oldCheckedIndex];
+        }
+
+        return parentIndex;
+    }
+
+    public unionGroups(p: number, q: number): void {
         while (this.list[p] !== this.list[q]) {
             let oldQ = this.list[q];
             this.list[q] = this.list[p];
             q = oldQ;
+
+            this.groupsLength[q] = 0;
         }
     }
 
-    public connected(p: number, q: number): boolean {
-        const oldP = p;
-        while (this.list[p] !== p) {
-            p = this.list[p];
+    public union(p: number, q: number): void {
+        const pParent = this.find(p);
+        const qParent = this.find(q);
+
+        if (pParent === qParent) {
+            // числа уже в одной группе, не нужно их объединять
+            return;
         }
 
-        const pParent = this.list[p];
-        this.list[oldP] = pParent; // path optimization
+        const pGroupLength = this.groupsLength[pParent];
+        const qGroupLength = this.groupsLength[qParent];
 
-        const oldQ = q;
-        while (this.list[q] !== q) {
-            q = this.list[q];
+        this.uniqueGroupsAmount -= 1;
+
+        if (pGroupLength >= qGroupLength) {
+            this.groupsLength[pParent] += this.groupsLength[qParent];
+            this.unionGroups(p, q);
+            return;
         }
 
-        const qParent = this.list[q];
-        this.list[oldQ] = qParent; // path optimization
-
-        return qParent === pParent;
+        this.groupsLength[qParent] += this.groupsLength[pParent];
+        this.unionGroups(q, p);
     }
 }
-
-const check = () => {
-    const unionFind = new UnionFind(10);
-
-    unionFind.union(0, 2);
-    unionFind.union(4, 5);
-    unionFind.union(8, 9);
-    unionFind.union(0, 1);
-    unionFind.union(6, 4);
-    unionFind.union(3, 7);
-    unionFind.union(7, 9);
-    unionFind.union(4, 2);
-
-    console.log(unionFind.connected(3, 9)); // true
-    console.log(unionFind.connected(5, 8)); // false
-    console.log(unionFind.connected(1, 7)); // false
-    console.log(unionFind.connected(2, 6)); // true
-};
-
-check();
