@@ -37,13 +37,13 @@ export class UnionFind {
         return parentIndex;
     }
 
-    public union(p: number, q: number): void {
+    public union(p: number, q: number): boolean {
         const pParent = this.find(p);
         const qParent = this.find(q);
 
         if (pParent === qParent) {
             // числа уже в одной группе, не нужно их объединять
-            return;
+            return true;
         }
 
         const pGroupLength = this.groupsLength[pParent];
@@ -55,13 +55,13 @@ export class UnionFind {
             this.groupsLength[pParent] += this.groupsLength[qParent];
             this.list[qParent] = pParent;
             this.groupsLength[qParent] = 0;
-            return;
+            return false;
         }
 
         this.groupsLength[qParent] += this.groupsLength[pParent];
         this.list[pParent] = qParent;
         this.groupsLength[pParent] = 0;
 
-        return;
+        return false;
     }
 }
